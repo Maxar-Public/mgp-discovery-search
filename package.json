@@ -1,0 +1,26 @@
+{
+  "name": "mgp-sample-app-1",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mdi/font": "7.4.47",
+    "@vue-leaflet/vue-leaflet": "^0.10.1",
+    "leaflet": "^1.9.4",
+    "prismjs": "^1.29.0",
+    "roboto-fontface": "*",
+    "vue": "^3.4.31",
+    "vuetify": "^3.7.14"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
+    "sass": "1.77.6",
+    "unplugin-fonts": "^1.1.1",
+    "unplugin-vue-components": "^0.27.2",
+    "vite": "^6.2.0",
+    "vite-plugin-vuetify": "^2.0.3"
+  }
+}
