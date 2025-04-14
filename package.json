@@ -1,5 +1,5 @@
 {
-  "name": "mgp-sample-app-1",
+  "name": "mgp-discovery-search",
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",

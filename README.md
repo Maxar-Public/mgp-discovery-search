@@ -1,4 +1,4 @@
-# MGP Sample App 1
+# MGP Discovery Search
 
 This project leverages Vue.js, Vuetify, and Vite to deliver a modern and interactive web application. It integrates a Leaflet map to provide an interactive interface for retrieving, visualizing, and analyzing geospatial data. The project allows for the user to apply filters, validate inputs, and display results fetched from the Discovery endpoint, enabling efficient data exploration and insights. Below is all the necessary information to set up and run the project.
 
@@ -47,8 +47,7 @@ For Linux, you can install Node.js and npm via a package manager (like `apt` for
 
     Clone the project to your local machine:
     ```
-    git clone https://github.com/maxar-analytics/mgp-sample-app-1.git
-    cd mgp-sample-app-1
+    git clone https://github.com/Maxar-Public/mgp-discovery-search.git
     ```
 2. **Install Dependencies**
 
@@ -65,7 +64,7 @@ For Linux, you can install Node.js and npm via a package manager (like `apt` for
     ```
     Replace `<your-api-key>` with your actual API Key.
     
-    **Note:** The `.env` needs to be in the root folder inside 'mgp-sample-app-1'
+    **Note:** The `.env` needs to be in the root folder inside 'mgp-discovery-search'
 
 # Usage
 
