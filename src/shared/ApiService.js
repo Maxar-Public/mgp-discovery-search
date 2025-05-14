@@ -44,7 +44,9 @@ export const fetchSensors = async () => {
       'wv03-swir',
       'wv04',
       'lg01',
-      'lg02'
+      'lg02',
+      'lg03',
+      'lg04'
     ];
   }
 };
