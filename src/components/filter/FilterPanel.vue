@@ -80,30 +80,48 @@
         <!-- Sensor -->
         <v-card-text style="height: 44px; align-items: end;" class="sensor-section-label">Sensor</v-card-text>
         <v-container fluid class="sensor-container">
-          <v-row class="tight-row">
+          <v-row v-if="loadingSensors" class="justify-center align-center" style="height: 100px;">
+            <v-progress-circular
+              indeterminate
+              color="primary"
+              size="24"
+            ></v-progress-circular>
+            <span class="ml-2">Loading sensors...</span>
+          </v-row>
+          <v-row v-else class="tight-row">
             <v-col
               cols="6"
               v-for="(sensorItem, index) in sensorItems"
-              :key="sensorItem.key"
+              :key="sensorItem"
               class="tight-col"
             >
-              <v-checkbox
-                v-model="sensor"
-                :value="sensorItem"
-                :disabled="loading"
-                hide-details
-                dense
-                class="tight-spacing"
-              >
-                <template v-slot:label>
-                  <span
-                    :style="{ color: sensor.includes(sensorItem) ? '#000000' : '#9e9e9e' }"
-                    class="sensor-text"
-                  >
-                    {{ sensorItem }}
-                  </span>
-                </template>
-              </v-checkbox>
+              <div class="sensor-checkbox-container">
+                <v-checkbox
+                  v-model="sensor"
+                  :value="sensorItem"
+                  :disabled="loading"
+                  hide-details
+                  dense
+                  class="tight-spacing"
+                >
+                  <template v-slot:label>
+                    <span
+                      :style="{ color: sensor.includes(sensorItem) ? '#000000' : '#9e9e9e' }"
+                      class="sensor-text"
+                    >
+                      {{ sensorItem }}
+                    </span>
+                  </template>
+                </v-checkbox>
+                <v-icon
+                  size="small"
+                  color="grey darken-1"
+                  @click="showSensorInfo(sensorItem)"
+                  class="info-icon"
+                >
+                  mdi-information-outline
+                </v-icon>
+              </div>
             </v-col>
           </v-row>
         </v-container>
@@ -149,13 +167,99 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Sensor Info Dialog -->
+    <v-dialog v-model="showSensorInfoDialog" max-width="800px">
+      <v-card>
+        <v-card-title class="text-h5">
+          {{ selectedSensorTitle }}
+          <v-spacer></v-spacer>
+          <v-btn icon @click="showSensorInfoDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        
+        <v-card-text>
+          <v-progress-circular
+            v-if="loadingSensorInfo"
+            indeterminate
+            color="primary"
+            class="mx-auto d-block my-4"
+          ></v-progress-circular>
+          
+          <div v-if="!loadingSensorInfo && sensorInfo">
+            <div class="my-2">
+              <strong>Description:</strong> {{ sensorInfo.description }}
+            </div>
+            <div v-if="sensorInfo.summaries && Object.keys(sensorInfo.summaries).length">
+              <v-expansion-panels>
+              <v-expansion-panel>
+                <v-expansion-panel-title>
+                <strong>Summaries</strong>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text>
+                <v-simple-table
+                  dense
+                  fixed-header
+                  height="250px"
+                  class="elevation-1 mt-2 mb-4"
+                >
+                  <thead>
+                  <tr>
+                    <th class="primary white--text" style="padding-top: 12px; padding-bottom: 12px;">Property</th>
+                    <th class="primary white--text" style="padding-top: 12px; padding-bottom: 12px;">Type</th>
+                    <th class="primary white--text" style="padding-top: 12px; padding-bottom: 12px;">Description</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr v-for="(summary, key) in sensorInfo.summaries" :key="key">
+                    <td class="font-weight-medium">{{ key }}</td>
+                    <td style="padding-left: 16px; padding-right: 16px;">{{ summary.type }}</td>
+                    <td>{{ summary.description }}</td>
+                  </tr>
+                  </tbody>
+                </v-simple-table>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+              </v-expansion-panels>
+            </div>
+            
+            <div class="my-2">
+              <strong>License:</strong> {{ sensorInfo.license }}
+            </div>
+            
+            <div class="my-2" v-if="sensorInfo.providers && sensorInfo.providers.length">
+              <strong>Providers:</strong>
+              <ul>
+                <li v-for="(provider, index) in sensorInfo.providers" :key="index">
+                  {{ provider.name }} ({{ provider.roles.join(', ') }})
+                </li>
+              </ul>
+            </div>
+            
+            <v-expansion-panels v-if="sensorInfoJson">
+              <v-expansion-panel>
+                <v-expansion-panel-title>View Full Details</v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <div class="json-content">{{ sensorInfoJson }}</div>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
+          </div>
+          
+          <div v-if="!loadingSensorInfo && !sensorInfo" class="text-center red--text">
+            Failed to load sensor information.
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script>
 import { ref, onMounted, watch, computed } from 'vue';
 import UploadGeoJson from './UploadGeojson';
-import { fetchFeatures, fetchSensors } from "@/shared/ApiService.js";
+import { fetchFeatures, fetchSensors, fetchCollectionInfo } from "@/shared/ApiService.js";
 import { saveData, getData, clearAllData, removeData } from '@/stores/dataStore';
 import DownloadLogs from '../banner/DownloadLogs.vue';
 import errorStore from '../../stores/errorStore';
@@ -189,6 +293,13 @@ export default {
     const popupMessage = ref("");
     const loading = ref(false);
     const isBboxEmpty = ref(true);
+    const showSensorInfoDialog = ref(false);
+    const selectedSensorTitle = ref("");
+    const sensorInfo = ref(null);
+    const sensorInfoJson = ref(null);
+    const loadingSensorInfo = ref(false);
+    const loadingSensors = ref(true);
+
 
     const setBbox = (newBbox) => {
       if (newBbox && newBbox.length > 0) {
@@ -200,8 +311,9 @@ export default {
 
     // Fetching sensors and setting default selection to all
     onMounted(async () => {
+      loadingSensors.value = true; // Make sure it is set before fetching
       try {
-        const sensorTitles = fetchSensors();
+        const sensorTitles = await fetchSensors();
         sensorItems.value = sensorTitles;
 
         // Set all sensors as selected by default
@@ -217,6 +329,8 @@ export default {
             info: "Error fetching Sensors: ",  
             timestamp: new Date().toISOString()
         });
+      } finally {
+        loadingSensors.value = false; // Set loading to false after fetching
       }
 
         if (!dateRangeFrom.value) {
@@ -412,6 +526,29 @@ export default {
       return isBboxEmpty.value ? {} : { color: '#424242' };
     });
 
+    const showSensorInfo = async (sensorItem) => {
+      // Populate the sensorInfo dialog with the STAC Collection's information
+      selectedSensorTitle.value = sensorItem;
+      showSensorInfoDialog.value = true;
+      loadingSensorInfo.value = true;
+      sensorInfo.value = null;
+      sensorInfoJson.value = '';
+      
+      try {
+        const info = await fetchCollectionInfo(sensorItem);
+        sensorInfo.value = info;
+        sensorInfoJson.value = JSON.stringify(info, null, 2);
+      } catch (error) {
+        errorStore.addError({
+          error: error.message,
+          info: `Error fetching information for sensor: ${sensorItem}`,
+          timestamp: new Date().toISOString()
+        });
+      } finally {
+        loadingSensorInfo.value = false;
+      }
+    };
+
     return {
       today,
       oneYearAgoString, 
@@ -437,6 +574,13 @@ export default {
       validateOffNadirAngle,
       restrictInput,
       infoState: infoStore.infoState,
+      loadingSensors,
+      showSensorInfo,
+      showSensorInfoDialog,
+      selectedSensorTitle,
+      sensorInfo,
+      sensorInfoJson,
+      loadingSensorInfo,
     };
   },
   methods:{
@@ -508,5 +652,31 @@ export default {
     padding: 0px;
     margin-right: auto;
     margin-left: auto;
+}
+
+.sensor-checkbox-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.info-icon {
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.info-icon:hover {
+  opacity: 1;
+}
+
+.json-content {
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 8px;
+  border-radius: 4px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 </style>
