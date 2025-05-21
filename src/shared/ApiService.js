@@ -93,6 +93,7 @@ export const fetchFeatures = async (bbox,selectedSensorsString,datetimeRange, fi
 
 // Get cloud polygons coordinates
 export const fetchCloudPolygons = async (cloudCover) => {
+
     try {
         //console.log(cloudCover);
         const response = await fetch(`${cloudCover}?&maxar_api_key=${apiKey}`, {
@@ -116,31 +117,4 @@ export const fetchCloudPolygons = async (cloudCover) => {
         });
     }
 
-};
-
-// Fetch Browse Images for feature visualization
-export const fetchBrowseImage = async (browseUrl) => {
-    try {
-        const response = await fetch(`${browseUrl}?&maxar_api_key=${apiKey}`, {
-            method: 'GET'
-        });
-
-        if (!response.ok) {
-            if(response.status === 408) throw new Error('Api call timeout, request took too long');
-            if(response.status === 401) throw new Error('Unauthorized, please insert a valid Api key in config');
-            if(response.status === 500) throw new Error('Internal API Error');
-            if(response.status === 404) throw new Error('Browse image not available for this feature');
-            else throw new Error('Bad Request');
-        }
-
-        const imageBlob = await response.blob();
-        return URL.createObjectURL(imageBlob);
-    } catch (error) {
-        errorStore.addError({ 
-            error: error.message,
-            info: "Error fetching Browse Image: ",  
-            timestamp: new Date().toISOString()
-        });
-        return null;
-    }
 };

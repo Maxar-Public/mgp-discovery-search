@@ -95,7 +95,6 @@
               :key="sensorItem"
               class="tight-col"
             >
-              <!-- Your existing checkbox code -->
               <div class="sensor-checkbox-container">
                 <v-checkbox
                   v-model="sensor"
@@ -528,6 +527,7 @@ export default {
     });
 
     const showSensorInfo = async (sensorItem) => {
+      // Populate the sensorInfo dialog with the STAC Collection's information
       selectedSensorTitle.value = sensorItem;
       showSensorInfoDialog.value = true;
       loadingSensorInfo.value = true;
