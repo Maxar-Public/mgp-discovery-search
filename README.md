@@ -2,6 +2,10 @@
 
 This project leverages Vue.js, Vuetify, and Vite to deliver a modern and interactive web application. It integrates a Leaflet map to provide an interactive interface for retrieving, visualizing, and analyzing geospatial data. The project allows for the user to apply filters, validate inputs, and display results fetched from the Discovery endpoint, enabling efficient data exploration and insights. Below is all the necessary information to set up and run the project.
 
+A companion Jupyter notebook illustrating the core concepts in Python is also available. Click the button below to run the notebook in [Binder](https://mybinder.org).
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Maxar-Public/mgp-discovery-search/binder?urlpath=%2Fdoc%2Ftree%2FDiscovery-Search-Notebook.ipynb)
+
 ## Features
 
 - **Framework:** Built using Vue 3 and Vuetify 3 for a responsive and modern UI.
